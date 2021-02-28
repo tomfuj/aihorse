@@ -1,0 +1,592 @@
+{% extends './base.html' %}
+	
+	{% block head %}
+		{% load static %}
+	{% endblock head %}
+
+	{% block body %}
+		<div id="head-title">分析!</div>
+		<a href="/result" class="cp_btn">結果</a>
+		<script>
+
+			//ファイルを読み込む関数
+			//https://qiita.com/bambuu/items/1902453ca13e4d8662ee
+			function ReadCSV(url){
+
+				//HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成する。
+				var csv = new XMLHttpRequest(url); 
+				//読み込むCSVファイルを指定する。
+				csv.open("get", url , false); 
+				//HTTPリクエストの送信する。
+				csv.send();
+				//改行ごとに配列化する。
+				var csv_row = csv.responseText.split("\n"); 
+				//最終的な二次元配列を入れるための変数を宣言する。
+				var csv_array = []; 
+				//各行ごとにカンマで区切った文字列を要素とした二次元配列を生成する。
+				for(var i=0; i<csv_row.length; ++i){
+					csv_array[i] = csv_row[i].split(',');
+				}
+				
+				return csv_array;
+			}
+
+			function unpack(rows, key) {
+				return rows.map(function(row) { return row[key]; });
+			}
+
+			function ViewBarLineGraph(url, keyvar, selectvar, selectvarid, view_position, title){
+
+				Plotly.d3.csv(url, function(err, rows){
+					selectvarNames = unpack(rows, selectvar);
+					keyNames = unpack(rows, keyvar);
+					winratenum = unpack(rows, '単勝フラグ');
+					winrewardnum = unpack(rows, '単勝払戻金');
+					placeratenum = unpack(rows, '複勝フラグ');
+					placerewardnum = unpack(rows, '複勝払戻金');
+					selectvarlist = [];
+					keylist = [];
+					winratelist = [];
+					winrewardlist = [];
+					placeratelist = [];
+					placerewardlist = [];
+					for (var i=0; i<selectvarNames.length; i++ ){
+						if (selectvarlist.indexOf(selectvarNames[i]) === -1 ){
+								selectvarlist.push(selectvarNames[i]);
+							}
+					}
+
+					function getselectData(chosen) {
+						keylist = [];
+						winratelist = [];
+						winrewardlist = [];
+						placeratelist = [];
+						placerewardlist = [];
+						for (var i=0; i<selectvarNames.length; i++){
+							if (selectvarNames[i] === chosen) {
+								keylist.push(keyNames[i]);
+								winratelist.push(winratenum[i]);
+								winrewardlist.push(winrewardnum[i]);
+								placeratelist.push(placeratenum[i]);
+								placerewardlist.push(placerewardnum[i]);
+							}
+						}
+					};
+
+					function MakeBarLineGraph(chosen, view_position, title){
+
+						getselectData(chosen);
+
+						var trace1 = {
+							x: keylist,
+							y: winratelist,
+							name: '勝率',
+							type: 'bar',
+							marker: { color: 'rgb(200, 200, 255)' }
+						};
+
+						var trace2 = {
+							x: keylist,
+							y: placeratelist,
+							name: '複勝率',
+							type: 'bar',
+							marker: { color: 'rgb(255, 200, 200)' }
+						};
+
+						var trace3 = {
+							x: keylist,
+							y: winrewardlist,
+							name: '単勝回収率',
+							yaxis: 'y2',
+							type: 'line',
+							mode: 'lines+markers',
+							marker: { color: 'rgb(100, 100, 255)' , size: 16 }
+						};
+
+						var trace4 = {
+							x: keylist,
+							y: placerewardlist,
+							name: '複勝回収率',
+							yaxis: 'y2',
+							type: 'line',
+							mode: 'lines+markers',
+							marker: { color: 'rgb(255, 100, 100)' , size: 16 }
+						};
+
+						var data = [trace1, trace2, trace3, trace4];
+
+						//グラフタイトルを指定する。
+						var layout = {
+							title: title,
+							width: 1000,
+							height: 300,
+							margin: {l: 20, r: 50, b: 100, t: 20},
+							font: { size: 12 },
+							yaxis : { showgrid: false , rangemode: 'nonnegative'} ,
+							yaxis2: { overlaying: 'y', side: 'right', showgrid: false , rangemode: 'nonnegative'},
+							barmode: 'group',
+							legend: { x: 15, y: 15 }
+						};
+
+						//グラフをプロットする。
+						Plotly.newPlot(view_position, data, layout, {responsive: true});
+
+					}
+
+					//CSVの読み込み結果を変数化する。
+					var racecond = ReadCSV("{% static 'tools/media/racecond.csv' %}");
+					var contents_col = racecond[0].indexOf(selectvar);
+					var init_select = racecond[1][contents_col]
+
+					MakeBarLineGraph(chosen=init_select, view_position=view_position, title=title)
+
+					var idselector = document.getElementById(selectvarid);
+
+					function assignOptions(textArray, selector, init_select) {
+						for (var i=0; i<textArray.length; i++) {
+							var currentOption = document.createElement('option');
+							currentOption.text = textArray[i];
+							selector.appendChild(currentOption);
+							if (textArray[i] === init_select){
+								selector[i].selected = true;
+							}
+							
+						}
+					}
+
+					assignOptions(textArray=selectvarlist, selector=idselector, init_select=init_select);
+
+					function updateselect(){
+						Plotly.d3.csv(url, function(err, rows){
+							selectvarNames = unpack(rows, selectvar);
+							keyNames = unpack(rows, keyvar);
+							winratenum = unpack(rows, '単勝フラグ');
+							winrewardnum = unpack(rows, '単勝払戻金');
+							placeratenum = unpack(rows, '複勝フラグ');
+							placerewardnum = unpack(rows, '複勝払戻金');
+							selectvarlist = [];
+							keylist = [];
+							winratelist = [];
+							winrewardlist = [];
+							placeratelist = [];
+							placerewardlist = [];
+							for (var i=0; i<selectvarNames.length; i++ ){
+								if (selectvarlist.indexOf(selectvarNames[i]) === -1 ){
+										selectvarlist.push(selectvarNames[i]);
+									}
+							}
+							MakeBarLineGraph(chosen=idselector.value, view_position=view_position, title=title);
+						});
+					}
+					
+					idselector.addEventListener('change', updateselect, false);
+
+				});
+
+			}
+
+		</script>
+
+		<div class="tabs2">
+			<input id="shuboba-tab" type="radio" name="tab_item2" checked>
+			<label class="tab_item2" for="shuboba-tab">父馬別</label>
+			<input id="hahachichi-tab" type="radio" name="tab_item2">
+			<label class="tab_item2" for="hahachichi-tab">母の父馬別</label>
+			<input id="kisyu-tab" type="radio" name="tab_item2">
+			<label class="tab_item2" for="kisyu-tab">騎手別</label>
+			<input id="tyokyoshi-tab" type="radio" name="tab_item2">
+			<label class="tab_item2" for="tyokyoshi-tab">調教師別</label>
+			<input id="umaban-tab" type="radio" name="tab_item2">
+			<label class="tab_item2" for="umaban-tab">馬番別</label>
+
+			<div class="tab_content2" id="shuboba-tab_content">
+
+				<div class="control-row">
+					クラス: <select id="classmei1">
+				</select>
+				</div>
+				<div class="layout1">
+					<div id="layout01"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/shuboba_class_gb.csv' %}", 
+										 keyvar="父馬名",
+										 selectvar="クラス名",
+										 selectvarid="classmei1",
+										 view_position="layout01");
+					</script>
+				</div>
+
+				<div class="control-row">
+					芝ダ: <select id="shibada1">
+				</select>
+				</div>
+				<div class="layout2">
+					<div id="layout02"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/shuboba_shibada_gb.csv' %}", 
+										 keyvar="父馬名",
+										 selectvar="芝ダ",
+										 selectvarid="shibada1",
+										 view_position="layout02");
+					</script>
+				</div>
+
+				<div class="control-row">
+					距離: <select id="kyori1">
+				</select>
+				</div>
+				<div class="layout3">
+					<div id="layout03"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/shuboba_kyori_gb.csv' %}", 
+										 keyvar="父馬名",
+										 selectvar="距離",
+										 selectvarid="kyori1",
+										 view_position="layout03");
+					</script>
+				</div>
+
+				<div class="control-row">
+					場所: <select id="basho1">
+				</select>
+				</div>
+				<div class="layout4">
+					<div id="layout04"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/shuboba_basho_gb.csv' %}", 
+										 keyvar="父馬名",
+										 selectvar="場所",
+										 selectvarid="basho1",
+										 view_position="layout04");
+					</script>
+				</div>
+
+				<div class="control-row">
+					馬場: <select id="baba1">
+				</select>
+				</div>
+				<div class="layout5">
+					<div id="layout05"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/shuboba_baba_gb.csv' %}", 
+										 keyvar="父馬名",
+										 selectvar="馬場状態",
+										 selectvarid="baba1",
+										 view_position="layout05");
+					</script>
+				</div>
+			</div>
+
+			<div class="tab_content2" id="hahachichi-tab_content">
+
+				<div class="control-row">
+					クラス: <select id="classmei2">
+				</select>
+				</div>
+				<div class="layout6">
+					<div id="layout06"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/hahachichi_class_gb.csv' %}", 
+										 keyvar="母の父馬名",
+										 selectvar="クラス名",
+										 selectvarid="classmei2",
+										 view_position="layout06");
+					</script>
+				</div>
+
+				<div class="control-row">
+					芝ダ: <select id="shibada2">
+				</select>
+				</div>
+				<div class="layout7">
+					<div id="layout07"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/hahachichi_shibada_gb.csv' %}", 
+										 keyvar="母の父馬名",
+										 selectvar="芝ダ",
+										 selectvarid="shibada2",
+										 view_position="layout07");
+					</script>
+				</div>
+
+				<div class="control-row">
+					距離: <select id="kyori2">
+				</select>
+				</div>
+				<div class="layout8">
+					<div id="layout08"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/hahachichi_kyori_gb.csv' %}", 
+										 keyvar="母の父馬名",
+										 selectvar="距離",
+										 selectvarid="kyori2",
+										 view_position="layout08");
+					</script>
+				</div>
+
+				<div class="control-row">
+					場所: <select id="basho2">
+				</select>
+				</div>
+				<div class="layout9">
+					<div id="layout09"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/hahachichi_basho_gb.csv' %}", 
+										 keyvar="母の父馬名",
+										 selectvar="場所",
+										 selectvarid="basho2",
+										 view_position="layout09");
+					</script>
+				</div>
+
+				<div class="control-row">
+					馬場: <select id="baba2">
+				</select>
+				</div>
+				<div class="layout10">
+					<div id="layout10"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/hahachichi_baba_gb.csv' %}", 
+										 keyvar="母の父馬名",
+										 selectvar="馬場状態",
+										 selectvarid="baba2",
+										 view_position="layout10");
+					</script>
+				</div>
+			</div>
+
+			<div class="tab_content2" id="kisyu-tab_content">
+
+				<div class="control-row">
+					クラス: <select id="classmei3">
+				</select>
+				</div>
+				<div class="layout11">
+					<div id="layout11"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/kisyu_class_gb.csv' %}", 
+										 keyvar="騎手",
+										 selectvar="クラス名",
+										 selectvarid="classmei3",
+										 view_position="layout11");
+					</script>
+				</div>
+
+				<div class="control-row">
+					芝ダ: <select id="shibada3">
+				</select>
+				</div>
+				<div class="layout12">
+					<div id="layout12"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/kisyu_shibada_gb.csv' %}", 
+										 keyvar="騎手",
+										 selectvar="芝ダ",
+										 selectvarid="shibada3",
+										 view_position="layout12");
+					</script>
+				</div>
+
+				<div class="control-row">
+					距離: <select id="kyori3">
+				</select>
+				</div>
+				<div class="layout13">
+					<div id="layout13"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/kisyu_kyori_gb.csv' %}", 
+										 keyvar="騎手",
+										 selectvar="距離",
+										 selectvarid="kyori3",
+										 view_position="layout13");
+					</script>
+				</div>
+
+				<div class="control-row">
+					場所: <select id="basho3">
+				</select>
+				</div>
+				<div class="layout14">
+					<div id="layout14"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/kisyu_basho_gb.csv' %}", 
+										 keyvar="騎手",
+										 selectvar="場所",
+										 selectvarid="basho3",
+										 view_position="layout14");
+					</script>
+				</div>
+
+				<div class="control-row">
+					馬場: <select id="baba3">
+				</select>
+				</div>
+				<div class="layout15">
+					<div id="layout15"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/kisyu_baba_gb.csv' %}", 
+										 keyvar="騎手",
+										 selectvar="馬場状態",
+										 selectvarid="baba3",
+										 view_position="layout15");
+					</script>
+				</div>
+			</div>
+
+			<div class="tab_content2" id="tyokyoshi-tab_content">
+
+				<div class="control-row">
+					クラス: <select id="classmei4">
+				</select>
+				</div>
+				<div class="layout16">
+					<div id="layout16"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/tyokyoshi_class_gb.csv' %}", 
+										 keyvar="調教師",
+										 selectvar="クラス名",
+										 selectvarid="classmei4",
+										 view_position="layout16");
+					</script>
+				</div>
+
+				<div class="control-row">
+					芝ダ: <select id="shibada4">
+				</select>
+				</div>
+				<div class="layout17">
+					<div id="layout17"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/tyokyoshi_shibada_gb.csv' %}", 
+										 keyvar="調教師",
+										 selectvar="芝ダ",
+										 selectvarid="shibada4",
+										 view_position="layout17");
+					</script>
+				</div>
+
+				<div class="control-row">
+					距離: <select id="kyori4">
+				</select>
+				</div>
+				<div class="layout18">
+					<div id="layout18"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/tyokyoshi_kyori_gb.csv' %}", 
+										 keyvar="調教師",
+										 selectvar="距離",
+										 selectvarid="kyori4",
+										 view_position="layout18");
+					</script>
+				</div>
+
+				<div class="control-row">
+					場所: <select id="basho4">
+				</select>
+				</div>
+				<div class="layout19">
+					<div id="layout19"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/tyokyoshi_basho_gb.csv' %}", 
+										 keyvar="調教師",
+										 selectvar="場所",
+										 selectvarid="basho4",
+										 view_position="layout19");
+					</script>
+				</div>
+
+				<div class="control-row">
+					馬場: <select id="baba4">
+				</select>
+				</div>
+				<div class="layout20">
+					<div id="layout20"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/tyokyoshi_baba_gb.csv' %}", 
+										 keyvar="調教師",
+										 selectvar="馬場状態",
+										 selectvarid="baba4",
+										 view_position="layout20");
+					</script>
+				</div>
+			</div>
+
+			<div class="tab_content2" id="umaban-tab_content">
+
+				<div class="control-row">
+					クラス: <select id="classmei5">
+				</select>
+				</div>
+				<div class="layout21">
+					<div id="layout21"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/umaban_class_gb.csv' %}", 
+										 keyvar="馬番",
+										 selectvar="クラス名",
+										 selectvarid="classmei5",
+										 view_position="layout21");
+					</script>
+				</div>
+
+				<div class="control-row">
+					芝ダ: <select id="shibada5">
+				</select>
+				</div>
+				<div class="layout22">
+					<div id="layout22"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/umaban_shibada_gb.csv' %}", 
+										 keyvar="馬番",
+										 selectvar="芝ダ",
+										 selectvarid="shibada5",
+										 view_position="layout22");
+					</script>
+				</div>
+
+				<div class="control-row">
+					距離: <select id="kyori5">
+				</select>
+				</div>
+				<div class="layout23">
+					<div id="layout23"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/umaban_kyori_gb.csv' %}", 
+										 keyvar="馬番",
+										 selectvar="距離",
+										 selectvarid="kyori5",
+										 view_position="layout23");
+					</script>
+				</div>
+
+				<div class="control-row">
+					場所: <select id="basho5">
+				</select>
+				</div>
+				<div class="layout24">
+					<div id="layout24"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/umaban_basho_gb.csv' %}", 
+										 keyvar="馬番",
+										 selectvar="場所",
+										 selectvarid="basho5",
+										 view_position="layout24");
+					</script>
+				</div>
+
+				<div class="control-row">
+					馬場: <select id="baba5">
+				</select>
+				</div>
+				<div class="layout25">
+					<div id="layout25"></div>
+					<script>
+						ViewBarLineGraph(url="{% static 'tools/media/umaban_baba_gb.csv' %}", 
+										 keyvar="馬番",
+										 selectvar="馬場状態",
+										 selectvarid="baba5",
+										 view_position="layout25");
+					</script>
+				</div>
+			</div>
+		</div>
+	{% endblock body %}

@@ -1,0 +1,277 @@
+{% extends './base.html' %}
+
+	{% block head %}
+		{% load static %}
+		<script type="text/javascript">
+			$(function() {
+				$('#var_select1').on("change", function(){
+					var var1 = $('[name=var_select_from1] option:selected').text();
+						MakeRaderchart(url="{% static 'tools/media/graph_result_detail.csv' %}", 
+											var1=var1,
+											view_position="raderchart")
+				});
+			});
+		</script>
+	{% endblock head %}
+
+	{% block body %}
+		<div id="head-title">結果!</div>
+		<a href="/analytics" class="cp_btn">分析</a>
+		<script>
+
+				//ファイルを読み込む関数
+				//https://qiita.com/bambuu/items/1902453ca13e4d8662ee
+				function ReadCSV(url){
+
+					//HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成する。
+					var csv = new XMLHttpRequest(url); 
+					//読み込むCSVファイルを指定する。
+					csv.open("get", url , false); 
+					//HTTPリクエストの送信する。
+					csv.send();
+					//改行ごとに配列化する。
+					var csv_row = csv.responseText.split("\n"); 
+					//最終的な二次元配列を入れるための変数を宣言する。
+					var csv_array = []; 
+					//各行ごとにカンマで区切った文字列を要素とした二次元配列を生成する。
+					for(var i=0; i<csv_row.length; ++i){
+						csv_array[i] = csv_row[i].split(',');
+					}
+					
+					return csv_array;
+				}
+
+				//選択リストに変数名を追加する関数
+				function MakeSelectBarContents(url, idname, var1){
+
+					//CSVの読み込み結果を変数化する。
+					var result = ReadCSV(url);
+
+					//対象の選択リストを指定する。
+					var id = document.getElementById(idname);
+
+					//変数リストを作成する。
+					//https://algorithm.joho.info/programming/javascript/document-form-select-value-add/
+					//https://www.ksakae1216.com/entry/2017/06/20/063000
+					var contents_list = []
+					//var contents_list_nodup = []
+					var contents_col = result[0].indexOf(var1);
+					for(var i=1; i<result.length-1; ++i){
+						contents_list.push(result[i][contents_col])
+					}
+
+					//var contents_list_nodup = Array.from(new Set(contents_list)).sort();
+					
+					for (var j=0; j<contents_list.length; ++j){
+						var element = document.createElement("option");
+						element.setAttribute("value", j);
+						element.innerHTML = contents_list[j];
+						id.appendChild(element);
+					}
+				}
+
+		</script>
+
+		<div class="tabs1">
+			<input id="table-tab" type="radio" name="tab_item1" checked>
+			<label class="tab_item1" for="table-tab"><i class="fas fa-table"></i></label>
+			<input id="bargraph-tab" type="radio" name="tab_item1">
+			<label class="tab_item1" for="bargraph-tab"><i class="fas fa-signal"></i></label>
+			<input id="raderchart-tab" type="radio" name="tab_item1">
+			<label class="tab_item1" for="raderchart-tab"><i class="fas fa-search"></i></label>
+		
+			<div class="tab_content1" id="table-tab_content">
+				{{ racecond1 }}
+				<br>
+				{{ racecond2 }}
+				<br>
+				{{ racecond3 }}
+				<div id="table"></div>
+				<script>
+
+					function MakeTable(url, view_position, title){
+
+						//CSVの読み込み結果を変数化する。
+						var result = ReadCSV(url);
+
+						//ヘッダー用の配列を作成する。
+						var headerValues = []
+						for (var i=0; i<result[0].length; i++) {
+							headerValues.push(result[0][i])
+						}
+						
+						//console.log(headerValues)
+
+						//テーブルセル用の配列を作成する。	
+						var cellValue = []
+						for (var j=1; j<result.length-1; j++) {
+							cellValue.push(result[j])
+						}
+
+						const transpose = a => a[0].map((_, c) => a.map(r => r[c]));
+						var cellValues = transpose(cellValue);
+
+						//console.log(cellValues)
+
+						//テーブルの表示用の設定をする。
+						var data = [{
+							type: 'table',
+							columnwidth: [0.5,2.0,2.0,2.0,0.5,0.5,1.0,0.5,1.0,0.5,1.0,0.6,1.0,1.0,1.0,1.0,1.,1.0],
+							columnorder: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],
+							header: {
+								values: headerValues,
+								align: "center",
+								line: {width: 1, color: ['black']},
+								fill: {color: ['rgb(200, 255, 200)']},
+								font: {family: "Arial", size: 10, color: ['black']}
+							},
+							cells: {
+								values: cellValues,
+								align: ["center", "center"],
+								line: {color: "black", width: 1},
+								font: {family: "Arial", size: 10, color: ["black"]}
+							}
+						}]
+
+						var layout = {
+							title: title,
+							height: 600
+						}
+
+						//テーブルをプロットする。
+						Plotly.plot(view_position, data, layout);
+						
+					};
+
+					MakeTable(url="{% static 'tools/media/graph_result.csv' %}", 
+								view_position="table");
+
+				</script>
+			</div>
+
+			<div class="tab_content1" id="bargraph-tab_content">
+				<div id="bargraph1"></div>
+				<script>
+			 
+					function MakeBarGraph(url, var1, var2, var3, view_position, title){
+
+						//CSVの読み込み結果を変数化する。
+						var result = ReadCSV(url);
+
+						//グラフ描画用の横軸と縦軸の配列を生成する。
+						var x = []
+						var y1 = []
+						var y2 = []
+						for(var j=1; j<result.length-1; ++j){
+							var x_contents_col = result[0].indexOf(var1);
+							var y1_contents_col = result[0].indexOf(var2);
+							var y2_contents_col = result[0].indexOf(var3);
+							x.push(result[j][x_contents_col])
+							y1.push(result[j][y1_contents_col])
+							y2.push(result[j][y2_contents_col])
+						}
+						
+						//グラフ描画用の横軸と縦軸とグラフタイプを指定する。
+						var trace1 = {
+							x: x,
+							y: y1,
+							type: 'bar',
+							name: 'メインAI',
+							marker: { color: 'rgb(200, 255, 200)' }							
+						}
+
+						var trace2 = {
+							x: x,
+							y: y2,
+							type: 'bar',
+							name: 'サブAI',
+							marker: { color: 'rgb(255, 200, 255)' }							
+						}
+
+						var data = [trace1, trace2];
+
+						//グラフタイトルを指定する。
+						var layout = {
+							title: title,
+							width: 960,
+							height: 600,
+							barmode: 'group'
+						};
+
+						//グラフをプロットする。
+						Plotly.plot(view_position, data, layout);
+
+					}
+					
+					MakeBarGraph(url="{% static 'tools/media/graph_bar_result.csv' %}", 
+									var1="馬名", 
+									var2="メイン予想結果", 
+									var3="サブ予想結果",
+									view_position="bargraph1");
+
+				</script>
+			</div>
+		
+			<div class="tab_content1" id="raderchart-tab_content">
+				<p>
+					<form name="var_select_from1">
+						<select id="var_select1" name="var_select1_bar">
+							<option value="">(馬名)</option>
+						</select>
+					</form>
+				</p>
+				<script>
+					MakeSelectBarContents(url="{% static 'tools/media/graph_result.csv' %}", idname="var_select1", var1="馬名");
+				</script>
+				<div id="raderchart"></div>
+				<script>
+			 
+					function MakeRaderchart(url, var1, view_position){
+
+						//CSVの読み込み結果を変数化する。
+						var result = ReadCSV(url);
+
+						//グラフ描画用の横軸と縦軸の配列を生成する。
+						var horse_name = []
+
+						for (var i=0; i<result.length; i++) {
+							horse_name.push(result[i][0])
+						}
+						
+						var horse_name_col = horse_name.indexOf(var1);
+						
+						x = result[horse_name_col]
+						console.log(x)
+						x.shift()
+						console.log(x)
+						x.push(result[horse_name_col][0])					
+		 				console.log(x)
+						y = result[0]
+						y.shift()
+						y.push(result[0][0])
+
+						//グラフ描画用の値と項目を指定する。
+						data = [{
+							r: x,
+							theta: y,
+							type: 'scatterpolar',
+							fill: 'toself',
+							name: var1
+						}]
+
+						//グラフの見た目を整える。
+						layout = {
+							polar: {
+								radialaxis: {
+									visible: true,
+								}
+							},
+							showlegend: true
+						}
+
+						Plotly.plot(view_position, data, layout);
+
+					}
+				</script>
+			</div>
+	{% endblock body %}

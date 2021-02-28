@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>AIHorse</title>
+		{% load static %}
+		<link href="{% static 'tools/css/style.css' %}" rel="stylesheet">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+		<link href="{% static 'tools/css/drawer.min.css' %}" rel="stylesheet">
+		<script src="{% static 'tools/js/jquery.min.js' %}"></script>
+		<script src="{% static 'tools/js/iscroll.min.js' %}"></script>
+		<script src="{% static 'tools/js/drawer.min.js' %}"></script>
+		<script src="{% static 'tools/js/d3.js' %}"></script>
+		<script src="{% static 'tools/js/drawer.js' %}"></script>
+		<script src="{% static 'tools/js/plotly.js' %}"></script>
+		<script src="{% static 'tools/js/plotly-latest.min.js' %}"></script>
+		{% block head %}
+		{% endblock %}
+	</head>
+
+	<body class="drawer drawer--left">
+		<header role="banner">
+		<button type="button" class="drawer-toggle drawer-hamburger">
+			<span class="sr-only">toggle navigation</span>
+			<span class="drawer-hamburger-icon"></span>
+			</button>
+			<nav class="drawer-nav" role="navigation">
+			  <ul class="drawer-menu">
+				<li><a class="drawer-menu-item" href="../">トップページ</a></li>
+				<li><a class="drawer-menu-item" href="../train">モデル構築</a></li>
+				<li><a class="drawer-menu-item" href="../predict">予想</a></li>
+				<li><a class="drawer-menu-item" href="../result">結果</a></li>
+				<li><a class="drawer-menu-item" href="../analytics">分析</a></li>
+			  </ul>
+			</nav>
+		  </header>
+		  <main role="main">
+		  </main>
+		  
+		<script>
+			$(document).ready(function() {
+			$('.drawer').drawer();
+		  });
+		</script>
+			{% block body %}
+			{% endblock %}
+	</body>
+		{% block add %}
+		{% endblock %}
+</html>

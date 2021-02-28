@@ -1,0 +1,55 @@
+{% extends './base.html' %}
+
+	{% block head %}
+		<script type="text/javascript">
+			$(function() {
+				$('#train_label1').on("change", function(){
+					var file = this.files[0];
+					console.log(file);
+				});	
+			});
+		</script>
+		<script type="text/javascript">
+			$(function() {
+				$('#train_label2').on("change", function(){
+					var file = this.files[0];
+					console.log(file);
+				});	
+			});
+		</script>
+		<script type="text/javascript">
+			$(function() {
+				$('#train_label3').on("change", function(){
+					var file = this.files[0];
+					console.log(file);
+					if(file != null) {
+						$("#train_button").prop("disabled", false);
+						$('#train_button').css('display', 'block');
+					}
+				});	
+			});
+		</script>
+	{% endblock head %}
+
+	{% block body %}
+		<div id="head-title">モデル構築!</div>
+
+		<div class="wrapper">
+			<form method="post" enctype="multipart/form-data">
+				{% csrf_token %}
+				<div>
+				<label class="json_download" for="train_label1">出馬表ファイル<br>
+					<input id="train_label1" type="file" name="racecard"></label>
+				</div>
+				<div>
+				<label class="json_download" for="train_label2">レース情報ファイル<br>
+					<input id="train_label2" type="file" name="raceinfo"></label>
+				</div>
+				<div>
+				<label class="json_download" for="train_label3">新馬時調教ファイル<br>
+					<input id="train_label3" type="file" name="training"></label>
+				</div>
+				<button id="train_button" class="json_download" type="submit" disabled>学習</button>
+			</form>
+		</div>
+	{% endblock body%}

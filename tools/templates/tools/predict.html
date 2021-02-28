@@ -1,0 +1,41 @@
+{% extends './base.html' %}
+
+	{% block head %}
+		{% load static %}
+		<script type="text/javascript">
+			$(function() {
+				$('#predict_label1').on("change", function(){
+					var file = this.files[0];
+					console.log(file);
+				});	
+			});
+		</script>
+		<script type="text/javascript">
+			$(function() {
+				$('#predict_label2').on("change", function(){
+					var file = this.files[0];
+					console.log(file);
+					if(file != null) {
+						$("#predict_button").prop("disabled", false);
+						$('#predict_button').css('display', 'block');
+					}
+				});	
+			});
+		</script>
+	{% endblock head %}
+
+	{% block body %}
+		<div id="head-title">予想!</div>
+		<form method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			<div>
+			<label class="json_download" for="predict_label1">出馬表ファイル<br>
+				<input id="predict_label1" type="file" name="racecard"></label>
+			</div>
+			<div>
+			<label class="json_download" for="predict_label2">新馬時調教ファイル<br>
+				<input id="predict_label2" type="file" name="training"></label>
+			</div>
+			<button id="predict_button" class="json_download" type="submit" disabled>予想</button>
+		</form>
+	{% endblock body %}
