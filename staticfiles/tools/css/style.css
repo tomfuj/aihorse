@@ -1,0 +1,217 @@
+/*common*/
+#head-title{
+  text-align: center;
+  width:100%;
+  margin-bottom: 50px;
+  font-size: 32px;
+  font-family: Courier;
+}
+
+.json_download {
+  padding: 0.5em;
+  font-size: 20px;
+}
+
+/*base.html*/
+body {
+	padding-left: 100px;
+	padding-top: 100px;
+  	text-decoration: underline;
+}
+
+/*index.html*/
+.simple_square_btn1 {
+	display: block;
+	position: relative;
+	width: 180px;
+	height: 30px;
+	padding: 0.8em;
+	text-align: center;
+	text-decoration: none;
+	color: #fff;
+	background: #795548;
+}
+.simple_square_btn1:hover {
+	 opacity:0.8;
+	 cursor: pointer;
+	 text-decoration: none;
+}
+
+.simple_square_btn2 {
+	display: block;
+	position: relative;
+	width: 180px;
+	height: 30px;
+	padding: 0.8em;
+	text-align: center;
+	text-decoration: none;
+	color: #fff;
+	background: #795548;
+	margin-top: 20px;
+}
+.simple_square_btn2:hover {
+	 opacity:0.8;
+	 cursor: pointer;
+	 text-decoration: none;
+}
+
+/*train.html*/
+#train_label1 {
+  margin-bottom: 30px; 
+}
+
+#train_label2 {
+  margin-bottom: 30px; 
+}
+
+#train_label3 {
+  margin-bottom: 50px; 
+}
+
+#train_button {
+  width: 150px;
+}
+
+/*predict.html*/
+#predict_label1 {
+  margin-bottom: 30px; 
+}
+
+#predict_label2 {
+  margin-bottom: 30px; 
+}
+
+#predict_button {
+  width: 150px;
+}
+
+/*result.html*/
+/*タブ切り替え全体のスタイル*/
+.tabs1 {
+  margin-top: 50px;
+  padding-bottom: 40px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  width: 1080px;
+  margin-left: -10 auto;
+}
+
+/*タブのスタイル*/
+.tab_item1 {
+  width: calc(100%/3);
+  height: 50px;
+  border-bottom: 3px solid #5ab4bd;
+  background-color: #d9d9d9;
+  line-height: 50px;
+  font-size: 16px;  text-align: center;
+
+  color: #565656;
+  display: block;
+  float: left;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.tab_item1:hover {
+  opacity: 0.75;
+}
+
+/*ラジオボタンを全て消す*/
+input[name="tab_item1"] {
+  display: none;
+}
+
+/*タブ切り替えの中身のスタイル*/
+.tab_content1 {
+  display: none;
+  padding: 40px 40px 0;
+  clear: both;
+  overflow: hidden;
+}
+
+/*選択されているタブのコンテンツのみを表示*/
+#table-tab:checked ~ #table-tab_content,
+#bargraph-tab:checked ~ #bargraph-tab_content,
+#raderchart-tab:checked ~ #raderchart-tab_content {
+  display: block;
+}
+
+/*選択されているタブのスタイルを変える*/
+.tabs1 input:checked + .tab_item1 {
+  background-color: #5ab4bd;
+  color: #fff;
+}
+
+/*analytics.html*/
+/*タブ切り替え全体のスタイル*/
+.tabs2 {
+  margin-top: 50px;
+  padding-bottom: 40px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  width: 1080px;
+  margin-left: -10 auto;
+}
+
+/*タブのスタイル*/
+.tab_item2 {
+  width: calc(100%/5);
+  height: 50px;
+  border-bottom: 3px solid #5ab4bd;
+  background-color: #d9d9d9;
+  line-height: 50px;
+  font-size: 16px;  text-align: center;
+
+  color: #565656;
+  display: block;
+  float: left;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.tab_item2:hover {
+  opacity: 0.75;
+}
+
+/*ラジオボタンを全て消す*/
+input[name="tab_item2"] {
+  display: none;
+}
+
+/*タブ切り替えの中身のスタイル*/
+.tab_content2 {
+  display: none;
+  padding: 40px 40px 0;
+  clear: both;
+  overflow: hidden;
+}
+
+#shuboba-tab:checked ~ #shuboba-tab_content,
+#hahachichi-tab:checked ~ #hahachichi-tab_content,
+#kisyu-tab:checked ~ #kisyu-tab_content,
+#tyokyoshi-tab:checked ~ #tyokyoshi-tab_content,
+#umaban-tab:checked ~ #umaban-tab_content {
+  display: block;
+}
+
+/*選択されているタブのスタイルを変える*/
+.tabs2 input:checked + .tab_item2 {
+  background-color: #5ab4bd;
+  color: #fff;
+}
+
+/*result.html*/
+/*analytics.html*/
+a.cp_btn {
+  display: block;
+  width: 160px;
+  padding: 0.8em;
+  text-align: center;
+  text-decoration: none;
+  color: black;
+  border: 2px solid black;
+  border-radius: 3px;
+  transition: .4s;
+}
